@@ -63,7 +63,7 @@ module Sonos::Endpoint::AVTransport
   # @param [String] uri Optional uri of the track to play. Leaving this blank, plays the current track.
   def play(uri = nil)
     # Play a song from the uri
-    set_av_transport_uri(uri) and return if uri
+    set_av_transport_uri(uri) if uri #and return if uri
 
     # Play the currently selected track
     parse_response send_transport_message('Play')

@@ -1,17 +1,11 @@
-#!/usr/bin/env ruby
-
-require 'sonos'
-require 'pry'
-
 class SonosConsole
 
-  attr_reader :system, :speakers, :commands
+  attr_reader :speakers, :commands
   attr_accessor :break, :current_speaker
 
   Command = Struct.new(:shortcut, :name, :example, :action)
 
   def initialize
-    @system = Sonos::System.new
     @speakers = system.speakers.sort_by{|s| s.name }
     @current_speaker = @speakers.first
     @commands = [
@@ -24,6 +18,10 @@ class SonosConsole
                   proc {|i| current_speaker.volume += i.to_i}),
       Command.new('q', 'quit', '', proc { exit(0) }),
     ]
+  end
+
+  def system
+    SonosConsole::System.instance
   end
 
   def go
@@ -50,16 +48,17 @@ class SonosConsole
   def reload
     self.break = true
     load __FILE__
+    load 'sonos'
     SonosConsole.new.go
   end
 
   def choose
     self.speakers.each_with_index do |s,i|
-      puts "#{i+1}: #{s.name}"
+      puts "#{i+1}: #{s.name} #{s.get_player_state[:state]}"
     end
     puts "Enter 1-#{self.speakers.size}"
     choice = Kernel.gets.chomp.to_i - 1
-    if choice <= 0
+    if choice < 0
       return puts("unchanged")
     else
       self.current_speaker = self.speakers[choice]
@@ -75,5 +74,5 @@ class SonosConsole
 
 end
 
-loop { SonosConsole.new.go }
+#loop { SonosConsole.new.go }
 
