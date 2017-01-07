@@ -21,6 +21,11 @@ module Keys
       return 'down' if chars.eql?("\e[B")
       return 'right' if chars.eql?("\e[C")
       return 'left' if chars.eql?("\e[D")
+      return 'backspace' if chars.eql?("\u007F")
+      return 'del' if chars.eql?("\e[3")
+      return 'enter' if chars.eql?("\r")
+      return 'enter' if chars.eql?("\n")
+
       if echo && chars =~ /^[0-9a-zA-Z]+$/
         print(chars)
       end

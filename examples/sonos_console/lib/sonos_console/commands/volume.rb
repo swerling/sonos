@@ -24,7 +24,7 @@ module Commands
         turn_on = false
       end
 
-      get_keys do |key|
+      get_keys do |key, string|
         if ["q", "\n", "\r"].include?(key)
           status ''
           false
@@ -56,18 +56,6 @@ module Commands
       else
         status "Volume raised #{change}"
       end
-    end
-
-    def status(message)
-      print "#{pad}#{message}#{clear}"
-    end
-
-    def clear
-      ' ' * 30 + "\r"
-    end
-
-    def pad
-      "\r" + ' ' * 3
     end
 
   end

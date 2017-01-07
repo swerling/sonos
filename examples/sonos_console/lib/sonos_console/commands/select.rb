@@ -15,13 +15,65 @@ module SonosConsole
 module Commands
 
   class Select < Command
+    include Keys
+    include Menu
 
-    def do key, arg_string
-      filter = arg_string
+    attr_accessor :filtered_items, :filter
 
-      regex = /#{arg_string.to_s.gsub(' ', '.*')}/i
-      radio = get_radio.select{|i| i.title =~ regex }
-      item = select_from_items(radio) # + lib + etc
+    def do key
+      puts <<-XXX
+      Type some chars of the radio station you want to hear.
+
+      Only the first 5 will be shown.
+
+      When you see the one you want, press the number to play it.
+      XXX
+
+
+      self.filter = ''
+      loop do
+        items = get_radio.select{|i| i.title =~ filter_regex }
+        if items.size.eql?(0)
+          puts "No matches for '#{filter}'".upcase
+          self.shrink_filter
+        elsif items.size.eql?(1)
+          selected(items.first)
+          break
+        else
+          puts "Showing first 5 of #{items.size}"
+          prompt =  "Current filter is '#{filter}'. Change filter or enter number from list above > ",
+          choice = choose(items[0..4],
+                    prompt: prompt,
+                    return_bad_choice: true) { |item|
+                      splits = item.title.split(self.filter_regex)
+                      if splits.empty?
+                        item.title
+                      else
+                        splits.join(self.filter.bold.white)
+                      end
+                    }
+          if choice.is_a?(String)
+            if %w(backspace del).include?(choice)
+              self.shrink_filter
+            elsif %(q enter).include?(choice)
+              break
+            else
+              self.filter << choice
+            end
+          else
+            selected(choice)
+            break
+          end
+        end
+      end
+    end
+
+#        protocol = item.protocol_info
+#        if (protocol =~ /^x-rincon-mp3radio/)
+#          return play_mp3_radio_item(item)
+#        end
+#        puts "Don't know how to play #{item.inspect}"
+    def selected(item)
       protocol = item.protocol_info
       if (protocol =~ /^x-rincon-mp3radio/)
         return play_mp3_radio_item(item)
@@ -32,6 +84,16 @@ module Commands
     def select_from_items(items)
       puts "selecting first item: #{items.first.title}"
       items.first
+    end
+
+    def shrink_filter
+      if self.filter.size > 0
+        self.filter = self.filter[0..-2]
+      end
+    end
+
+    def filter_regex
+        /#{self.filter.gsub(' ', '.*')}/i
     end
 
     def get_radio
