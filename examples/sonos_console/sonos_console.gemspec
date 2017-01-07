@@ -16,7 +16,7 @@ Gem::Specification.new do |gs|
   #gs.test_files    = gs.files.grep(%r{^test/})
   gs.require_paths = ["lib"]
 
-  gs.add_dependency 'color', "~> 1.0"
+  gs.add_dependency 'colored' , "~> 1.0"
   #gs.add_dependency 'sonos', "~> 0.3"
 
   gs.add_development_dependency "rake", "~> 12"

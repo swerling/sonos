@@ -15,8 +15,9 @@ module SonosConsole
     def go
       loop do
         begin
-          puts "\n\t" + Views.speakers(system, long: true).join("\n\t") + "\n\n"
-          print "#('h' for help) #{system.current_speaker.name}> "
+          puts "\n\t" + Views.speakers(system, long: true).join("\n\t")
+          puts "\n\tPress 'h' for help\n"
+          print '> '
           shortcut, args = Kernel.gets.to_s.split
           cmd1 = commands.detect{|c| c.selected_by?(shortcut) }
           if cmd1

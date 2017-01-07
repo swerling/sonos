@@ -9,18 +9,19 @@ module Views
 
   def self.speaker(speaker, long: false)
     if long
-      state = speaker.get_player_state[:state].to_s.downcase
-      state = 'paused' if state =~ /paused/
-      s = speaker.eql?(SonosConsole::System.instance.current_speaker)? '* ' : ''
-      s << "#{speaker.name} is #{state}"
+      is_current = SonosConsole::System.instance.current_speaker.eql?(speaker)
+      state = speaker_state(speaker)
+      s = "#{speaker.name} is #{state}"
       if state !~ /stopped/i
         s << ": #{now_playing(speaker)}"
       end
-      s
+
+      (is_current)? s.bold.green : s.green
     else
       speaker.name
     end
   end
+
   def self.now_playing(speaker)
     np = speaker.now_playing
     title = np[:title]
@@ -29,5 +30,11 @@ module Views
     info = np[:info]
     "#{title} #{artist} #{album} #{info}"
   end
+
+  def self.speaker_state(speaker)
+    state = speaker.get_player_state[:state].to_s.downcase
+    return (state =~ /paused/)? 'paused' : state
+  end
+
 end
 end
