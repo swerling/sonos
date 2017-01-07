@@ -3,9 +3,71 @@ module SonosConsole
 module Commands
 
   class Volume < Command
+    include Keys
 
-    def do key, arg_string
-      self.system.current_speaker.volume += arg_string.to_i
+    attr_accessor :change
+
+    def do key
+      puts <<-XXX
+      Lowercase 'v' or DOWN arrow to lower volume
+      Uppercase 'V' or UP arrow to raise volume
+      Press Enter to return to main menu
+      XXX
+
+      self.change = 0
+
+      if !sonos.current_speaker.is_playing?
+        status "Current speaker is NOT playing, will turn on"
+        turn_on = true
+      else
+        print_change
+        turn_on = false
+      end
+
+      get_keys do |key|
+        if ["q", "\n", "\r"].include?(key)
+          status ''
+          false
+        else
+          if turn_on
+            sonos.current_speaker.play
+            turn_on = false
+          end
+          if ['v', 'down', 'left'].include?(key)
+            Thread.new{sonos.current_speaker.volume -= 1}
+            self.change -= 1
+          elsif ['V', 'up', 'right'].include?(key)
+            Thread.new{sonos.current_speaker.volume += 1}
+            self.change += 1
+          else
+            status "Press 'v', 'V', arrow keys, or Enter"
+          end
+          print_change
+          true
+        end
+      end
+    end
+
+    def print_change
+      if self.change < 0
+        status "Volume lowered #{change}"
+      elsif self.change.eql?(0)
+        status "Volume unchanged"
+      else
+        status "Volume raised #{change}"
+      end
+    end
+
+    def status(message)
+      print "#{pad}#{message}#{clear}"
+    end
+
+    def clear
+      ' ' * 30 + "\r"
+    end
+
+    def pad
+      "\r" + ' ' * 3
     end
 
   end

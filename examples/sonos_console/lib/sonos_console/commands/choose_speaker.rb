@@ -5,18 +5,20 @@ module Commands
 
     include SonosConsole::Menu
 
-    def do key, args = nil
-      speakers = self.system.speakers
+    def do key
+      speakers = sonos.speakers
       i = key.to_i
       if i.between?(1, speakers.size)
-        self.system.current_speaker = speakers[i-1]
+        sonos.current_speaker = speakers[i-1]
       else
         raise "Something wrong -- only integers should trigger this command"
       end
     end
 
     def shortcut_description
-      "0-9"
+      limit = sonos.speakers.size
+      limit = 9 if limit > 9 # this UI cant handle double digit numbers, so limit of 9 speakers
+      "1-#{limit}"
     end
 
     def help

@@ -1,15 +1,15 @@
 module SonosConsole
 module Views
 
-  def self.speakers(system, long: false)
-    system.speakers.each_with_index.map do |s, i|
+  def self.speakers(sonos, long: false)
+    sonos.speakers.each_with_index.map do |s, i|
       "#{i+1}: #{speaker(s, long: long)}"
     end
   end
 
   def self.speaker(speaker, long: false)
     if long
-      is_current = SonosConsole::System.instance.current_speaker.eql?(speaker)
+      is_current = SonosConsole.sonos.current_speaker.eql?(speaker)
       state = speaker_state(speaker)
       s = "#{speaker.name} is #{state}"
       if state !~ /stopped/i

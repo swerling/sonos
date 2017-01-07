@@ -35,7 +35,7 @@ module Commands
     end
 
     def get_radio
-      @_radio ||= self.system.current_speaker.container_contents("R:0/0")
+      @_radio ||= sonos.current_speaker.container_contents("R:0/0")
     end
 
     def play_mp3_radio_item(item)
@@ -58,9 +58,9 @@ module Commands
       meta = meta.gsub('<','&lt;').gsub('>','&gt;').strip
       uri = item.resource.gsub('&', '&amp;')
 
-      result = system.current_speaker.set_av_transport_uri(uri, meta)
+      result = sonos.current_speaker.set_av_transport_uri(uri, meta)
       if result && result.http && result.http.code.eql?(200)
-        system.current_speaker.play
+        sonos.current_speaker.play
         puts "Playing #{item.title}"
       end
     end

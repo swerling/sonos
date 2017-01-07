@@ -11,8 +11,8 @@ module Commands
       @help = opts[:example]
     end
 
-    def system
-      SonosConsole::System.instance
+    def sonos
+      SonosConsole.sonos
     end
 
     def shortcut_description
