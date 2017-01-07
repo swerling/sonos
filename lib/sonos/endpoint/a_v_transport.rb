@@ -245,11 +245,11 @@ module Sonos::Endpoint::AVTransport
     parse_response send_transport_message('ConfigureSleepTimer', "<NewSleepTimerDuration>#{duration}</NewSleepTimerDuration>")
   end
 
-  private
+  #private
 
   # Play a stream.
-  def set_av_transport_uri(uri)
-    send_transport_message('SetAVTransportURI', "<CurrentURI>#{uri}</CurrentURI><CurrentURIMetaData></CurrentURIMetaData>")
+  def set_av_transport_uri(uri, meta = nil)
+    send_transport_message('SetAVTransportURI', "<CurrentURI>#{uri}</CurrentURI><CurrentURIMetaData>#{meta}</CurrentURIMetaData>")
   end
 
   def transport_client(apply_to_master)
@@ -260,6 +260,7 @@ module Sonos::Endpoint::AVTransport
   def send_transport_message(name, part = '<Speed>1</Speed>', apply_to_master=true)
     action = "#{TRANSPORT_XMLNS}##{name}"
     message = %Q{<u:#{name} xmlns:u="#{TRANSPORT_XMLNS}"><InstanceID>0</InstanceID>#{part}</u:#{name}>}
+#binding.pry
     transport_client(apply_to_master).call(name, soap_action: action, message: message)
   end
 
