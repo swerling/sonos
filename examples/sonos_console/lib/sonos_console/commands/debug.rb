@@ -2,7 +2,7 @@ module SonosConsole
 module Commands
 
   class Debug < Command
-    def do arg_string
+    def do key, arg_string
       puts '*' * 80
       puts '*'
       puts "$s is SonosConsole::System.instance"

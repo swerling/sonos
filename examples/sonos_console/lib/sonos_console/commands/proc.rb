@@ -5,7 +5,7 @@ module Commands
 
     attr_accessor :action
 
-    def do arg_string
+    def do key, arg_string
       action.call
     end
 

@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../lib/bootstrap', File.dirname(__FILE__))
+
+#$: << File.expand_path('../lib', File.dirname(__FILE__))
+#require 'sonos'
+#require File.expand_path('../sonos_console.rb', File.dirname(__FILE__))
+

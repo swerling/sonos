@@ -16,7 +16,7 @@ module Commands
 
   class Select < Command
 
-    def do arg_string
+    def do key, arg_string
       filter = arg_string
 
       regex = /#{arg_string.to_s.gsub(' ', '.*')}/i
@@ -40,7 +40,7 @@ module Commands
 
     def play_mp3_radio_item(item)
       puts "Play mp3 radio station: #{item.title}"
-      tunein_service = 'SA_RINCON65031_'
+      tunein_service = 'SA_RINCON65031_' # what is this?
       meta = <<-XXX
       <DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/"
           xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
@@ -48,7 +48,7 @@ module Commands
           xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">
           <item id="R:0/0/0" parentID="R:0/0" restricted="true">
               <dc:title>#{item.title}</dc:title>
-              <upnp:class>object.item.audioItem.audioBroadcast</upnp:class>
+              <upnp:class>#{item.upnp_class}</upnp:class>
               <desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">
                   #{tunein_service}
               </desc>
@@ -56,13 +56,7 @@ module Commands
       </DIDL-Lite>
       XXX
       meta = meta.gsub('<','&lt;').gsub('>','&gt;').strip
-
       uri = item.resource.gsub('&', '&amp;')
-
-#        for prefix in ('http://', 'https://'):
-#            if uri.startswith(prefix):
-#                # Replace only the first instance
-#                uri = uri.replace(prefix, 'x-rincon-mp3radio://', 1)
 
       result = system.current_speaker.set_av_transport_uri(uri, meta)
       if result && result.http && result.http.code.eql?(200)

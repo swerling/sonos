@@ -1,0 +1,10 @@
+source 'https://rubygems.org'
+
+gemspec
+
+# use this instead of the one in gemspec during development
+# comment out for release
+gem 'sonos', :path => File.expand_path('../..', File.dirname(__FILE__))
+
+
+

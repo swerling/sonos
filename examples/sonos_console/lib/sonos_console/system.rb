@@ -8,7 +8,6 @@ module SonosConsole
     attr_accessor :current_speaker
 
     def initialize
-
       # Sonos gem does some discovery here. Expect pause
       @system = Sonos::System.new
 

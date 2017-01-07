@@ -15,11 +15,12 @@ module SonosConsole
     def go
       loop do
         begin
+          puts "\n\t" + Views.speakers(system, long: true).join("\n\t") + "\n\n"
           print "#('h' for help) #{system.current_speaker.name}> "
           shortcut, args = Kernel.gets.to_s.split
-          cmd1 = commands.detect{|c| c.shortcut.eql?(shortcut)}
+          cmd1 = commands.detect{|c| c.selected_by?(shortcut) }
           if cmd1
-            cmd1.do(args)
+            cmd1.do(shortcut, args)
           else
             puts "Unknown command, '#{shortcut}'"
             help
@@ -32,8 +33,8 @@ module SonosConsole
     end
 
     def help
-      self.commands.sort_by(&:shortcut).each do |c|
-        puts [c.shortcut,  c.name, c.example].compact.join(', ')
+      self.commands.sort_by{|c| c.shortcut.to_s}.each do |c|
+        puts [c.shortcut_description,  c.name, c.help].compact.join(', ')
       end
     end
 
