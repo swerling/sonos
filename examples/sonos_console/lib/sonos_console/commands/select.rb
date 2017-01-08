@@ -33,8 +33,7 @@ XXX
 
       self.filter = ''
       loop do
-        #items = radio_stations.select{|i| i.title =~ /#{self.filter}/i }
-        items = []
+        items = radio_stations.select{|i| i.title =~ /#{self.filter}/i }
         items = items + albums.select{|i|
           Views.content_item(i) =~ /#{self.filter}/i
         }
@@ -45,9 +44,9 @@ XXX
           selected(items.first)
           break
         else
-          puts "Showing first 5 of #{items.size}"
+          puts "Showing first 9 of #{items.size}"
           prompt =  "Current filter is '#{filter}'. Change filter or enter number from list above > "
-          choice = choose(items[0..4],
+          choice = choose(items[0..8],
                     prompt: prompt,
                     return_bad_choice: true) { |item|
                       Views.content_item(item, highlight: self.filter)
@@ -55,7 +54,7 @@ XXX
           if choice.is_a?(String)
             if %w(backspace del).include?(choice)
               self.shrink_filter
-            elsif %w(q enter).include?(choice)
+            elsif %w(enter).include?(choice)
               break
             else
               self.filter << choice

@@ -5,6 +5,8 @@ module Sonos::Endpoint::ContentDirectory
                   :title,
                   :upnp_class,
                   :protocol_info,
+                  :album_art_uri,
+                  :creator,
                   :resource
     def initialize(args={}); args.each{|k,v| send("#{k}=", v)}; end
   end
@@ -18,8 +20,12 @@ module Sonos::Endpoint::ContentDirectory
   end
 
   # Get the radio station listing ("My Radio Stations")
-  def radio_stations(search_key = '.*', starting_index = 0, requested_count = 1000)
+  def radio_stations
     container_contents "R:0/0"
+  end
+
+  def albums
+    container_contents "A:ALBUM"
   end
 
   # Get the contents of a given content directory container
@@ -28,35 +34,12 @@ module Sonos::Endpoint::ContentDirectory
     action = "#{CONTENT_DIRECTORY_XMLNS}##{name}"
     starting_index = 0
     requested_count = 1_000_000
-    message = %Q{<u:#{name} xmlns:u="#{CONTENT_DIRECTORY_XMLNS}"><ObjectID>#{container}</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>dc:title,res,dc:creator,upnp:artist,upnp:album,upnp:albumArtURI</Filter><StartingIndex>#{starting_index}</StartingIndex><RequestedCount>#{requested_count}</RequestedCount><SortCriteria></SortCriteria></u:Browse>}
+    requested_count = 1_000_000
+    #message = %Q{<u:#{name} xmlns:u="#{CONTENT_DIRECTORY_XMLNS}"><ObjectID>#{container}</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>dc:title,res,dc:creator,upnp:artist,upnp:album,upnp:albumArtURI</Filter><StartingIndex>#{starting_index}</StartingIndex><RequestedCount>#{requested_count}</RequestedCount><SortCriteria></SortCriteria></u:Browse>}
+    message = %Q{<u:#{name} xmlns:u="#{CONTENT_DIRECTORY_XMLNS}"><ObjectID>#{container}</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>*</Filter><StartingIndex>#{starting_index}</StartingIndex><RequestedCount>#{requested_count}</RequestedCount><SortCriteria></SortCriteria></u:Browse>}
     result = content_directory_client.call name, soap_action: action, message: message
     parse_items(result.body[:browse_response][:result])
   end
-
-#  def container_contentsSAVE(container, starting_index, requested_count)
-#    name = 'Browse'
-#    action = "#{CONTENT_DIRECTORY_XMLNS}##{name}"
-#    message = %Q{<u:#{name} xmlns:u="#{CONTENT_DIRECTORY_XMLNS}"><ObjectID>#{container}</ObjectID><BrowseFlag>BrowseDirectChildren</BrowseFlag><Filter>dc:title,res,dc:creator,upnp:artist,upnp:album,upnp:albumArtURI</Filter><StartingIndex>#{starting_index}</StartingIndex><RequestedCount>#{requested_count}</RequestedCount><SortCriteria></SortCriteria></u:Browse>}
-#    result = content_directory_client.call name, soap_action: action, message: message
-#    body = result.body[:browse_response]
-#
-#    hash = {
-#      total: body[:total_matches].to_i,
-#      items: parse_items(body[:result])
-#    }
-#
-#    # Paginate
-#    # TODO: This is ugly and inflexible
-#    if starting_index == 0
-#      start = starting_index
-#      while hash[:items].count < hash[:total]
-#        start += requested_count
-#        hash[:items] += browse(start, requested_count)[:items]
-#      end
-#    end
-#
-#    hash
-#  end
 
   private
 
@@ -66,13 +49,15 @@ module Sonos::Endpoint::ContentDirectory
 
   def parse_items(string)
     doc = Nokogiri::XML(string)
-    doc.css('item').map do |item|
+    (doc.css('item') + doc.css('container')).map do |item|
       res = item.css('res').first
       ContentItem.new(
         id: item['id'],
         protocol_info: res['protocolInfo'],
         resource: res.text,
+        creator: item.xpath('dc:creator').text,
         title: item.xpath('dc:title').text,
+        album_art_uri: item.xpath('upnp:albumArtURI').text,
         upnp_class: item.xpath('upnp:class').text)
     end
 #      result << {

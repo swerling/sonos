@@ -46,10 +46,11 @@ module Views
     artist = np[:artist]
     album = np[:album]
     info = np[:info]
-    if album
-      "#{artist}: #{album} - #{title} #{info}"
+    uri = np[:uri]
+    if album.empty?
+      "#{title} - #{info} - #{uri}"
     else
-      "#{title}"
+      "#{artist}: #{album} - #{title} #{info}"
     end
   end
 

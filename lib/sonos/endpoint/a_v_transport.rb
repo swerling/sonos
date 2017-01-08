@@ -53,6 +53,7 @@ module Sonos::Endpoint::AVTransport
     state = get_player_state[:state]
     !['PAUSED_PLAYBACK', 'STOPPED'].include?(state)
   end
+  alias :playing? :is_playing?
 
   # Pause the currently playing track.
   def pause
