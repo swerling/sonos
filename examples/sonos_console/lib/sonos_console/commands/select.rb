@@ -21,18 +21,23 @@ module Commands
     attr_accessor :filtered_items, :filter
 
     def do key
-      puts <<-XXX
-      Type some chars of the radio station you want to hear.
+      h = <<-XXX
+Type some chars of the radio station you want to hear.
 
-      Only the first 5 will be shown.
+Only the first 5 will be shown.
 
-      When you see the one you want, press the number to play it.
-      XXX
+When you see the one you want, press the number to play it.
+XXX
+     puts h.cyan
 
 
       self.filter = ''
       loop do
-        items = get_radio.select{|i| i.title =~ filter_regex }
+        #items = radio_stations.select{|i| i.title =~ /#{self.filter}/i }
+        items = []
+        items = items + albums.select{|i|
+          Views.content_item(i) =~ /#{self.filter}/i
+        }
         if items.size.eql?(0)
           puts "No matches for '#{filter}'".upcase
           self.shrink_filter
@@ -41,21 +46,16 @@ module Commands
           break
         else
           puts "Showing first 5 of #{items.size}"
-          prompt =  "Current filter is '#{filter}'. Change filter or enter number from list above > ",
+          prompt =  "Current filter is '#{filter}'. Change filter or enter number from list above > "
           choice = choose(items[0..4],
                     prompt: prompt,
                     return_bad_choice: true) { |item|
-                      splits = item.title.split(self.filter_regex)
-                      if splits.empty?
-                        item.title
-                      else
-                        splits.join(self.filter.bold.white)
-                      end
+                      Views.content_item(item, highlight: self.filter)
                     }
           if choice.is_a?(String)
             if %w(backspace del).include?(choice)
               self.shrink_filter
-            elsif %(q enter).include?(choice)
+            elsif %w(q enter).include?(choice)
               break
             else
               self.filter << choice
@@ -68,22 +68,14 @@ module Commands
       end
     end
 
-#        protocol = item.protocol_info
-#        if (protocol =~ /^x-rincon-mp3radio/)
-#          return play_mp3_radio_item(item)
-#        end
-#        puts "Don't know how to play #{item.inspect}"
     def selected(item)
       protocol = item.protocol_info
       if (protocol =~ /^x-rincon-mp3radio/)
         return play_mp3_radio_item(item)
+      elsif (protocol =~ /^x-rincon-playlist/)
+        return play_playlist_item(item)
       end
       puts "Don't know how to play #{item.inspect}"
-    end
-
-    def select_from_items(items)
-      puts "selecting first item: #{items.first.title}"
-      items.first
     end
 
     def shrink_filter
@@ -92,14 +84,21 @@ module Commands
       end
     end
 
-    def filter_regex
-        /#{self.filter.gsub(' ', '.*')}/i
+    def radio_stations
+      @_rstats ||= sonos.current_speaker.radio_stations
     end
 
-    def get_radio
-      @_radio ||= sonos.current_speaker.container_contents("R:0/0")
+    def albums
+      @_albums ||= sonos.current_speaker.albums
     end
 
+    def play_playlist_item(item)
+      #puts "Playing #{item.title}"
+      #puts "Todo: play playlist item"
+      play_mp3_radio_item(item) # this works for albums at least
+    end
+
+    # TODO: move this into a_v_transport!
     def play_mp3_radio_item(item)
       puts "Play mp3 radio station: #{item.title}"
       tunein_service = 'SA_RINCON65031_' # what is this?

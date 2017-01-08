@@ -16,7 +16,7 @@ module Commands
 
       self.change = 0
 
-      if !sonos.current_speaker.is_playing?
+      if !sonos.current_speaker.playing?
         status "Current speaker is NOT playing, will turn on"
         turn_on = true
       else
@@ -25,7 +25,7 @@ module Commands
       end
 
       get_keys do |key, string|
-        if ["q", "\n", "\r"].include?(key)
+        if ["q", "enter"].include?(key)
           status ''
           false
         else

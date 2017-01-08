@@ -1,6 +1,24 @@
 module SonosConsole
 module Views
 
+  def self.content_item(item, highlight: nil)
+    upnp_class =  item.upnp_class
+    item_class = 'Unknown'
+    item_class = 'Album' if upnp_class =~ /musicAlbum$/i
+    item_class = 'Radio' if upnp_class =~ /audioBroadcast$/i
+
+    artist = item.creator
+    title = artist.nil?? item.title : "#{artist} - '#{item.title}'"
+    if highlight
+      regex = /#{highlight}/i
+      splits = title.split(regex)
+      if !splits.empty?
+        title = splits.join(highlight.bold.white)
+      end
+    end
+    "#{item_class}: #{title}"
+  end
+
   def self.speakers(sonos, long: false)
     sonos.speakers.each_with_index.map do |s, i|
       "#{i+1}: #{speaker(s, long: long)}"
@@ -28,7 +46,11 @@ module Views
     artist = np[:artist]
     album = np[:album]
     info = np[:info]
-    "#{title} #{artist} #{album} #{info}"
+    if album
+      "#{artist}: #{album} - #{title} #{info}"
+    else
+      "#{title}"
+    end
   end
 
   def self.speaker_state(speaker)
