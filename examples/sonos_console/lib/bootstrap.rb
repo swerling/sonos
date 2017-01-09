@@ -6,5 +6,5 @@ rescue LoadError => x
   require "bundler/setup"
   require 'sonos_console'
   require 'pry'
-  require File.expand_path('./sonos_console.rb', File.dirname(__FILE__))
+  #require File.expand_path('./sonos_console.rb', File.dirname(__FILE__))
 end

@@ -24,25 +24,20 @@ module Commands
       h = <<-XXX
 Type some chars of the radio station you want to hear.
 
-Only the first 5 will be shown.
+Only the first 9 will be shown.
 
 When you see the one you want, press the number to play it.
 XXX
-     puts h.cyan
-
+      puts h.cyan
 
       self.filter = ''
       loop do
-        items = radio_stations.select{|i| i.title =~ /#{self.filter}/i }
-        items = items + albums.select{|i|
+        items = (radio_stations + albums + sonos_playlists).select{|i|
           Views.content_item(i) =~ /#{self.filter}/i
         }
         if items.size.eql?(0)
           puts "No matches for '#{filter}'".upcase
           self.shrink_filter
-        elsif items.size.eql?(1)
-          selected(items.first)
-          break
         else
           puts "Showing first 9 of #{items.size}"
           prompt =  "Current filter is '#{filter}'. Change filter or enter number from list above > "
@@ -70,12 +65,23 @@ XXX
     def selected(item)
       protocol = item.protocol_info
       if (protocol =~ /^x-rincon-mp3radio/)
-        return play_mp3_radio_item(item)
+        puts "Play mp3 radio station: #{item.title}"
+        sonos.current_speaker.play_mp3_radio_item_or_album(item)
       elsif (protocol =~ /^x-rincon-playlist/)
-        return play_playlist_item(item)
+        puts "Play playlist or album: #{item.title}"
+        sonos.current_speaker.play_mp3_radio_item_or_album(item)
+      elsif (item.upnp_class.eql?('object.container.playlistContainer'))
+        return play_playlist_container(item)
+      else
+        puts "Don't know how to play #{item.inspect}"
       end
-      puts "Don't know how to play #{item.inspect}"
     end
+
+    # play a whole playlist
+    def play_playlist_container(item)
+      puts "todo: play playlist"
+    end
+
 
     def shrink_filter
       if self.filter.size > 0
@@ -91,38 +97,8 @@ XXX
       @_albums ||= sonos.current_speaker.albums
     end
 
-    def play_playlist_item(item)
-      #puts "Playing #{item.title}"
-      #puts "Todo: play playlist item"
-      play_mp3_radio_item(item) # this works for albums at least
-    end
-
-    # TODO: move this into a_v_transport!
-    def play_mp3_radio_item(item)
-      puts "Play mp3 radio station: #{item.title}"
-      tunein_service = 'SA_RINCON65031_' # what is this?
-      meta = <<-XXX
-      <DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/"
-          xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
-          xmlns:r="urn:schemas-rinconnetworks-com:metadata-1-0/"
-          xmlns="urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/">
-          <item id="R:0/0/0" parentID="R:0/0" restricted="true">
-              <dc:title>#{item.title}</dc:title>
-              <upnp:class>#{item.upnp_class}</upnp:class>
-              <desc id="cdudn" nameSpace="urn:schemas-rinconnetworks-com:metadata-1-0/">
-                  #{tunein_service}
-              </desc>
-          </item>
-      </DIDL-Lite>
-      XXX
-      meta = meta.gsub('<','&lt;').gsub('>','&gt;').strip
-      uri = item.resource.gsub('&', '&amp;')
-
-      result = sonos.current_speaker.set_av_transport_uri(uri, meta)
-      if result && result.http && result.http.code.eql?(200)
-        sonos.current_speaker.play
-        puts "Playing #{item.title}"
-      end
+    def sonos_playlists
+      @_sq ||= sonos.current_speaker.sonos_playlists
     end
 
   end

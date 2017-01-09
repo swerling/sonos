@@ -14,11 +14,6 @@ module Sonos::Endpoint::ContentDirectory
   CONTENT_DIRECTORY_ENDPOINT = '/MediaServer/ContentDirectory/Control'
   CONTENT_DIRECTORY_XMLNS = 'urn:schemas-upnp-org:service:ContentDirectory:1'
 
-  # Get the current queue
-  def queue(starting_index = 0, requested_count = 100)
-    container_contents "Q:0", starting_index, requested_count
-  end
-
   # Get the radio station listing ("My Radio Stations")
   def radio_stations
     container_contents "R:0/0"
@@ -26,6 +21,18 @@ module Sonos::Endpoint::ContentDirectory
 
   def albums
     container_contents "A:ALBUM"
+  end
+
+  def queue
+    container_contents "Q:0"
+  end
+
+  def playlists
+    container_contents "A:PLAYLISTS"
+  end
+
+  def sonos_playlists
+    container_contents "SQ:"
   end
 
   # Get the contents of a given content directory container

@@ -6,9 +6,10 @@ module Views
     item_class = 'Unknown'
     item_class = 'Album' if upnp_class =~ /musicAlbum$/i
     item_class = 'Radio' if upnp_class =~ /audioBroadcast$/i
+    item_class = 'Playlist' if upnp_class =~ /playlistContainer$/i
 
     artist = item.creator
-    title = artist.nil?? item.title : "#{artist} - '#{item.title}'"
+    title = (artist.nil? || artist.empty?)? item.title : "#{artist} - '#{item.title}'"
     if highlight
       regex = /#{highlight}/i
       splits = title.split(regex)
