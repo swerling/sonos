@@ -62,6 +62,7 @@ module Sonos::Endpoint::AVTransport
 
   def play_mp3_radio_item_or_album(item)
     tunein_service = 'SA_RINCON65031_' # what is this?
+tunein_service = 'SA_RINCON38663_X_#Svc38663-0-Token'
     meta = <<-XXX
     <DIDL-Lite xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:upnp="urn:schemas-upnp-org:metadata-1-0/upnp/"
@@ -77,11 +78,16 @@ module Sonos::Endpoint::AVTransport
     </DIDL-Lite>
     XXX
     meta = meta.gsub('<','&lt;').gsub('>','&gt;').strip
-    uri = item.resource.gsub('&', '&amp;')
+    begin
+      uri = item.resource.gsub('&', '&amp;')
 
-    result = set_av_transport_uri(uri, meta)
-    if result && result.http && result.http.code.eql?(200)
-      self.play
+      result = set_av_transport_uri(uri, meta)
+      if result && result.http && result.http.code.eql?(200)
+        self.play
+      end
+    rescue Savon::SOAPFault => x
+      puts "#{x}, #{x.class}: #{x.backtrace.join("\n")}"
+      p x.http.inspect
     end
   end
 

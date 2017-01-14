@@ -2,6 +2,10 @@ module Sonos::Endpoint::ContentDirectory
 
   class ContentItem
     attr_accessor :id,
+                  :description,
+                  :ordinal,
+                  :type,
+                  :resMD,
                   :title,
                   :upnp_class,
                   :protocol_info,
@@ -14,9 +18,13 @@ module Sonos::Endpoint::ContentDirectory
   CONTENT_DIRECTORY_ENDPOINT = '/MediaServer/ContentDirectory/Control'
   CONTENT_DIRECTORY_XMLNS = 'urn:schemas-upnp-org:service:ContentDirectory:1'
 
-  # Get the radio station listing ("My Radio Stations")
+  # Get "My Radio Stations"
   def radio_stations
     container_contents "R:0/0"
+  end
+
+  def favorites
+    container_contents "FV:2"
   end
 
   def albums
@@ -60,6 +68,10 @@ module Sonos::Endpoint::ContentDirectory
       res = item.css('res').first
       ContentItem.new(
         id: item['id'],
+        description: item.xpath('r:description').text,
+        ordinal: item.xpath('r:ordinal').text,
+        type: item.xpath('r:type').text,
+        resMD: item.xpath('r:resMD').text,
         protocol_info: res['protocolInfo'],
         resource: res.text,
         creator: item.xpath('dc:creator').text,
@@ -67,14 +79,5 @@ module Sonos::Endpoint::ContentDirectory
         album_art_uri: item.xpath('upnp:albumArtURI').text,
         upnp_class: item.xpath('upnp:class').text)
     end
-#      result << {
-#        queue_id: item['id'],
-#        title: item.xpath('dc:title').inner_text,
-#        artist: item.xpath('dc:creator').inner_text,
-#        album: item.xpath('upnp:album').inner_text,
-#        album_art: "http://#{self.ip}:#{Sonos::PORT}#{item.xpath('upnp:albumArtURI').inner_text}",
-#        duration: res['duration'],
-#        id: res.inner_text
-#      }
   end
 end

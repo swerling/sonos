@@ -15,7 +15,7 @@ module Commands
       end
     end
 
-    def shortcut_description
+    def shortcuts_description
       limit = sonos.speakers.size
       limit = 9 if limit > 9 # this UI cant handle double digit numbers, so limit of 9 speakers
       "1-#{limit}"

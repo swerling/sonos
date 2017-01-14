@@ -35,8 +35,8 @@ module SonosConsole
         puts "\n" + Views.speakers(sonos, long: true).join("\n")
         puts "\nPress 'h' for help\n"
         print '> '
-        #shortcut, args = Kernel.gets.to_s.split
         key = self.get_key
+        #puts "K: #{key}"
         cmd = commands.detect{|c| c.selected_by?(key) }
         if cmd
           print ": #{cmd.name}\n"
@@ -60,8 +60,8 @@ module SonosConsole
 
 
     def help
-      self.commands.sort_by{|c| c.shortcut.to_s}.each do |c|
-        puts "\t#{[c.shortcut_description,  c.name, c.help].compact.join(', ')}".blue
+      self.commands.sort_by{|c| c.shortcuts.first.to_s }.each do |c|
+        puts "\t#{[c.shortcuts_description,  c.name, c.help].compact.join(', ')}".blue
       end
     end
 

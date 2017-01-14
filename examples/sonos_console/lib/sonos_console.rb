@@ -25,20 +25,20 @@ shell.commands = [
   [/\d/, 'choose speaker', nil, SonosConsole::Commands::ChooseSpeaker],
   ['d', 'debug', nil, SonosConsole::Commands::Debug ],
   ['h', 'help', nil, proc { shell.help } ],
-  ['n', 'next', nil, proc { SonosConsole::System.instance.current_speaker.next }],
-  ['p', 'previous', nil, proc { SonosConsole::System.instance.current_speaker.previous }],
+  [['n', 'right'], 'next', nil, proc { SonosConsole::System.instance.current_speaker.next }],
+  [['p', 'left'], 'previous', nil, proc { SonosConsole::System.instance.current_speaker.previous }],
   ['q', 'quit', nil, proc{ puts "Goodbye."; exit(0) } ],
   ['r', 'reload', nil, proc{ shell.break!; load __FILE__ } ],
   ['s', 'select music', nil, SonosConsole::Commands::Select],
-  ['v', 'volume', "eg. 'v 10' increases volume 10, 'v -10' decreases by 10", SonosConsole::Commands::Volume],
+  [['v', 'V', 'up', 'down'], 'volume', "eg. 'v 10' increases volume 10, 'v -10' decreases by 10", SonosConsole::Commands::Volume],
   ['z', 'play/pause music', nil, SonosConsole::Commands::PlayPause],
-].map do |shortcut, name, help, klz_or_proc|
+].map do |shortcuts, name, help, klz_or_proc|
     if klz_or_proc.is_a?(Proc)
-      command = SonosConsole::Commands::Proc.new(shortcut: shortcut, name: name, help: help)
+      command = SonosConsole::Commands::Proc.new(shortcuts: Array(shortcuts), name: name, help: help)
       command.action = klz_or_proc
       command
     else
-      klz_or_proc.new(shortcut: shortcut, name: name, help: help)
+      klz_or_proc.new(shortcuts: Array(shortcuts), name: name, help: help)
     end
 end
 

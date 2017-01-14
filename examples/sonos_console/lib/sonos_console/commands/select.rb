@@ -32,7 +32,8 @@ XXX
 
       self.filter = ''
       loop do
-        items = (radio_stations + albums + sonos_playlists).select{|i|
+        items = (favorites + radio_stations + albums + sonos_playlists).select{|i|
+        #items = (favorites).select{|i|
           Views.content_item(i) =~ /#{self.filter}/i
         }
         if items.size.eql?(0)
@@ -70,6 +71,9 @@ XXX
       elsif (protocol =~ /^x-rincon-playlist/)
         puts "Play playlist or album: #{item.title}"
         sonos.current_speaker.play_mp3_radio_item_or_album(item)
+      elsif (item.upnp_class.eql?('object.itemobject.item.sonos-favorite'))
+        puts "Play sonos favorite: #{item.title}"
+        sonos.current_speaker.play_mp3_radio_item_or_album(item)
       elsif (item.upnp_class.eql?('object.container.playlistContainer'))
         return play_playlist_container(item)
       else
@@ -87,6 +91,10 @@ XXX
       if self.filter.size > 0
         self.filter = self.filter[0..-2]
       end
+    end
+
+    def favorites
+      @_rstats ||= sonos.current_speaker.favorites
     end
 
     def radio_stations

@@ -3,10 +3,10 @@ module Commands
 
   class Command
 
-    attr_reader :shortcut, :name, :help
+    attr_reader :shortcuts, :name, :help
 
     def initialize(opts={})
-      @shortcut = opts.fetch(:shortcut)
+      @shortcuts = opts.fetch(:shortcuts)
       @name = opts.fetch(:name)
       @help = opts[:example]
     end
@@ -15,17 +15,20 @@ module Commands
       SonosConsole.sonos
     end
 
-    def shortcut_description
-      self.shortcut
+    def shortcuts_description
+      self.shortcuts
     end
 
-    # return whether string matches our shortcut
+    # return whether string matches one of our shortcuts
     def selected_by?(string)
-      if shortcut.is_a?(Regexp)
-        string =~ shortcut
-      else
-        string.eql?(shortcut)
+      hit = shortcuts.detect do |shortcut|
+        if shortcut.is_a?(Regexp)
+          string =~ shortcut
+        else
+          string.eql?(shortcut)
+        end
       end
+      !!hit
     end
 
     def do key, arg_string
